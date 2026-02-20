@@ -68,6 +68,9 @@ LIB_EXPORT void ExecuteCommand(
     UINT32 maxResponse = *responseSize;
     TPM_RC result;  // return code for the command
 
+    fputs("ExecuteCommand()\n", stdout);
+    fflush(stdout);
+
     /* check for an unreasonably large command size, since it's cast to a signed integer later */
     if (requestSize > INT32_MAX) {
 	result = TPM_RC_SUCCESS;
