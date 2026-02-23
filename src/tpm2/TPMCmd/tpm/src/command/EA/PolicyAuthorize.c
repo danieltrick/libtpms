@@ -7,6 +7,16 @@
 
 #  include "Policy_spt_fp.h"
 
+static void print_tpm2b(const char *const name, const TPM2B *const buff)
+{
+    fprintf(stdout, "%s = 0x", name);
+    for (size_t i = 0; i < buff->size; ++i) {
+        fprintf(stdout, "%02X", buff->buffer[i]);
+    }
+    fputc('\n', stdout);
+    fflush(stdout);
+}
+
 /*(See part 3 specification)
 // Change policy by a signature from authority
 */
@@ -92,9 +102,13 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
             return result;
         }
 
+        print_tpm2b("in->checkTicket.digest", &in->checkTicket.digest.b);
+        print_tpm2b("ticket.digest         ", &ticket.digest.b);
+
         // Compare ticket digest.  If not match, return error
         if(!MemoryEqual2B(&in->checkTicket.digest.b, &ticket.digest.b)) {
-            fputs("F\n", stdout);
+            fputs("Compare ticket digest error!\n", stdout);
+            fflush(stdout);
             return TPM_RCS_VALUE + RC_PolicyAuthorize_checkTicket;
         }
     }
