@@ -311,18 +311,28 @@ CommandDispatcher(COMMAND* command)
     // and without output parameters.
     if(hasInParameters > 0)
     {
-        if(hasOutParameters)
+        if(hasOutParameters) {
+            fputs("cmd.inOutArg()\n", stdout);
             result = cmd.inOutArg(commandIn, commandOut);
-        else
+        } else {
+            fputs("cmd.inArg()\n", stdout);
             result = cmd.inArg(commandIn);
+        }
     }
     else
     {
-        if(hasOutParameters)
+        if(hasOutParameters) {
+            fputs("cmd.outArg()\n", stdout);
             result = cmd.outArg(commandOut);
-        else
+        } else {
+            fputs("cmd.noArgs()\n", stdout);
             result = cmd.noArgs();
+        }
     }
+
+    fprintf(stdout, "RC = 0x%04X\n", result);
+    fflush(stdout);
+
     if(result != TPM_RC_SUCCESS)
         goto Exit;
 

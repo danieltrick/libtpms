@@ -156,7 +156,7 @@ LIB_EXPORT void ExecuteCommand(
     if(result != TPM_RC_SUCCESS)
         goto Cleanup;
 
-    fprintf(stdout, "ExecuteCommand(code=0x%02X)\n", command.code);
+    fprintf(stdout, "ExecuteCommand(code=0x%04X)\n", command.code);
     fflush(stdout);
 
     // Check to see if the command is implemented.
