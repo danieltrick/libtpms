@@ -28,6 +28,9 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
     TPM_ALG_ID       hashAlg;
     UINT16           digestSize;
 
+    fputs("TPM2_PolicyAuthorize()\n", stdout);
+    fflush(stdout);
+
     // Input Validation
 
     // Get pointer to the session structure
