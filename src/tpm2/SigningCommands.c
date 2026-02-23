@@ -126,6 +126,7 @@ TPM2_VerifySignature(VerifySignature_In*  in,  // IN: input parameter list
 		return result;
 	}
 
+    print_tpm2b("out->validation.digest", &out->validation.digest.b);
     return TPM_RC_SUCCESS;
 }
 
