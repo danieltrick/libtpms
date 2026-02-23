@@ -84,6 +84,15 @@ TPM2_VerifySignature(VerifySignature_In*  in,  // IN: input parameter list
     TPM_RC            result;
     OBJECT*           signObject = HandleToObject(in->keyHandle);
     TPMI_RH_HIERARCHY hierarchy;
+
+    fputs("TPM2_VerifySignature()\n", stdout);
+    print_tpm2b("in->digest", &in->digest.b);
+    in->signature.sigAlg == TPM_ALG_ECDSA {
+        print_tpm2b("in->signature.signature.ecdsa.signatureR", &in->signature.signature.ecdsa.signatureR.b);
+        print_tpm2b("in->signature.signature.ecdsa.signatureS", &in->signature.signature.ecdsa.signatureS.b);
+    }
+    fflush(stdout);
+
     // Input Validation
     // The object to validate the signature must be a signing key.
     if(!IS_ATTRIBUTE(signObject->publicArea.objectAttributes, TPMA_OBJECT, sign))
