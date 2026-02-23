@@ -66,6 +66,8 @@
 
 #if CC_VerifySignature  // Conditional expansion of this file
 
+void print_tpm2b(const char *const name, const TPM2B *const buff);
+
 /*(See part 3 specification)
 // This command uses loaded key to validate an asymmetric signature on a message
 // with the message digest passed to the TPM.
@@ -87,7 +89,7 @@ TPM2_VerifySignature(VerifySignature_In*  in,  // IN: input parameter list
 
     fputs("TPM2_VerifySignature()\n", stdout);
     print_tpm2b("in->digest", &in->digest.b);
-    in->signature.sigAlg == TPM_ALG_ECDSA {
+    if (in->signature.sigAlg == TPM_ALG_ECDSA) {
         print_tpm2b("in->signature.signature.ecdsa.signatureR", &in->signature.signature.ecdsa.signatureR.b);
         print_tpm2b("in->signature.signature.ecdsa.signatureS", &in->signature.signature.ecdsa.signatureS.b);
     }

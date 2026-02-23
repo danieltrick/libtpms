@@ -7,7 +7,7 @@
 
 #  include "Policy_spt_fp.h"
 
-static void print_tpm2b(const char *const name, const TPM2B *const buff)
+void print_tpm2b(const char *const name, const TPM2B *const buff)
 {
     fprintf(stdout, "%s = 0x", name);
     for (size_t i = 0; i < buff->size; ++i) {
