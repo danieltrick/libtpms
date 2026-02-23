@@ -39,6 +39,7 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
 
     if(in->keySign.t.size < 2)
     {
+        fputs("A\n", stdout);
         return TPM_RCS_SIZE + RC_PolicyAuthorize_keySign;
     }
 
@@ -47,20 +48,26 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
 
     // 'keySign' parameter needs to use a supported hash algorithm, otherwise
     // can't tell how large the digest should be
-    if(!CryptHashIsValidAlg(hashAlg, FALSE))
+    if(!CryptHashIsValidAlg(hashAlg, FALSE)) {
+        fputs("B\n", stdout);
         return TPM_RCS_HASH + RC_PolicyAuthorize_keySign;
+    }
 
     digestSize = CryptHashGetDigestSize(hashAlg);
-    if(digestSize != (in->keySign.t.size - 2))
+    if(digestSize != (in->keySign.t.size - 2)) {
+        fputs("C\n", stdout);
         return TPM_RCS_SIZE + RC_PolicyAuthorize_keySign;
+    }
 
     //If this is a trial policy, skip all validations
     if(session->attributes.isTrialPolicy == CLEAR)
     {
         // Check that "approvedPolicy" matches the current value of the
         // policyDigest in policy session
-        if(!MemoryEqual2B(&session->u2.policyDigest.b, &in->approvedPolicy.b))
+        if(!MemoryEqual2B(&session->u2.policyDigest.b, &in->approvedPolicy.b)) {
+            fputs("D\n", stdout);
             return TPM_RCS_VALUE + RC_PolicyAuthorize_approvedPolicy;
+        }
 
         // Validate ticket TPMT_TK_VERIFIED
         // Compute aHash.  The authorizing object sign a digest
@@ -80,12 +87,16 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
         // re-compute TPMT_TK_VERIFIED
         result = TicketComputeVerified(
             in->checkTicket.hierarchy, &authHash, &in->keySign, &ticket);
-        if(result != TPM_RC_SUCCESS)
+        if(result != TPM_RC_SUCCESS) {
+            fprintf(stdout, "E: %04X\n", result);
             return result;
+        }
 
         // Compare ticket digest.  If not match, return error
-        if(!MemoryEqual2B(&in->checkTicket.digest.b, &ticket.digest.b))
+        if(!MemoryEqual2B(&in->checkTicket.digest.b, &ticket.digest.b)) {
+            fputs("F\n", stdout);
             return TPM_RCS_VALUE + RC_PolicyAuthorize_checkTicket;
+        }
     }
 
     // Internal Data Update
@@ -94,6 +105,7 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
     PolicyDigestClear(session);
 
     // Update policyDigest
+    fputs("PolicyContextUpdate()\n", stdout);
     return PolicyContextUpdate(
         TPM_CC_PolicyAuthorize, &in->keySign, &in->policyRef, NULL, 0, session);
 }
