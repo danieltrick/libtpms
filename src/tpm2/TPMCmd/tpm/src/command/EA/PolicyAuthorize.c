@@ -39,6 +39,10 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
     UINT16           digestSize;
 
     fputs("TPM2_PolicyAuthorize()\n", stdout);
+    print_tpm2b("in->approvedPolicy", &in->approvedPolicy.b);
+    print_tpm2b("in->policyRef", &in->policyRef.b);
+    print_tpm2b("in->keySign", &in->keySign.b);
+    print_tpm2b("in->checkTicket.digest", &in->checkTicket.digest.b);
     fflush(stdout);
 
     // Input Validation
@@ -49,7 +53,7 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
 
     if(in->keySign.t.size < 2)
     {
-        fputs("A\n", stdout);
+        fputs("Error A\n", stdout);
         return TPM_RCS_SIZE + RC_PolicyAuthorize_keySign;
     }
 
@@ -59,13 +63,13 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
     // 'keySign' parameter needs to use a supported hash algorithm, otherwise
     // can't tell how large the digest should be
     if(!CryptHashIsValidAlg(hashAlg, FALSE)) {
-        fputs("B\n", stdout);
+        fputs("Error B\n", stdout);
         return TPM_RCS_HASH + RC_PolicyAuthorize_keySign;
     }
 
     digestSize = CryptHashGetDigestSize(hashAlg);
     if(digestSize != (in->keySign.t.size - 2)) {
-        fputs("C\n", stdout);
+        fputs("Error C\n", stdout);
         return TPM_RCS_SIZE + RC_PolicyAuthorize_keySign;
     }
 
@@ -75,7 +79,7 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
         // Check that "approvedPolicy" matches the current value of the
         // policyDigest in policy session
         if(!MemoryEqual2B(&session->u2.policyDigest.b, &in->approvedPolicy.b)) {
-            fputs("D\n", stdout);
+            fputs("Error D\n", stdout);
             return TPM_RCS_VALUE + RC_PolicyAuthorize_approvedPolicy;
         }
 
@@ -98,7 +102,7 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
         result = TicketComputeVerified(
             in->checkTicket.hierarchy, &authHash, &in->keySign, &ticket);
         if(result != TPM_RC_SUCCESS) {
-            fprintf(stdout, "E: %04X\n", result);
+            fprintf(stdout, "Error E: %04X\n", result);
             return result;
         }
 
