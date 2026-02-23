@@ -99,6 +99,7 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
 
         // complete hash
         CryptHashEnd2B(&hashState, &authHash.b);
+        print_tpm2b("authHash", &authHash.b);
 
         // re-compute TPMT_TK_VERIFIED
         result = TicketComputeVerified(
@@ -109,7 +110,7 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
         }
 
         print_tpm2b("in->checkTicket.digest", &in->checkTicket.digest.b);
-        print_tpm2b("ticket.digest         ", &ticket.digest.b);
+        print_tpm2b("ticket.digest", &ticket.digest.b);
 
         // Compare ticket digest.  If not match, return error
         if(!MemoryEqual2B(&in->checkTicket.digest.b, &ticket.digest.b)) {
