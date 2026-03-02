@@ -64,7 +64,7 @@ TPM_RC TicketComputeVerified(
     HMAC_STATE  hmacState;
 
     puts("TicketComputeVerified()");
-    print_tpm2b("TickComVer::digest", &digest.b);
+    print_tpm2b("TickComVer::digest", &digest->b);
     print_tpm2b("TickComVer::keyName", &keyName->b);
     //
     // Fill in ticket fields
