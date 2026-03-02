@@ -9,6 +9,8 @@
 #include "Tpm.h"
 #include "Marshal.h"
 
+void print_tpm2b(const char *const name, const TPM2B *const buff);
+
 //** Functions
 
 //*** TicketIsSafe()
@@ -60,6 +62,10 @@ TPM_RC TicketComputeVerified(
     TPM_RC      result = TPM_RC_SUCCESS;
     TPM2B_PROOF proof;
     HMAC_STATE  hmacState;
+
+    puts("TicketComputeVerified()");
+    print_tpm2b("TickComVer::digest", &digest.b);
+    print_tpm2b("TickComVer::keyName", &keyName->b);
     //
     // Fill in ticket fields
     ticket->tag       = TPM_ST_VERIFIED;

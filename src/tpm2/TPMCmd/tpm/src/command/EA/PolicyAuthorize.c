@@ -61,6 +61,7 @@ TPM2_PolicyAuthorize(PolicyAuthorize_In* in  // IN: input parameter list
 
     // Extract from the Name of the key, the algorithm used to compute its Name
     hashAlg = BYTE_ARRAY_TO_UINT16(in->keySign.t.name);
+    printf("hashAlg from in->keySign.t.name: %04X\n", hashAlg);
 
     // 'keySign' parameter needs to use a supported hash algorithm, otherwise
     // can't tell how large the digest should be
