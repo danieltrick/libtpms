@@ -1000,7 +1000,8 @@ CryptParameterDecryption(
         return TPM_RC_INSUFFICIENT;
     }
 
-    if(cipherSize > MAX_COMMAND_SIZE || bufferSize <= 0
+//  if(cipherSize > MAX_COMMAND_SIZE || bufferSize <= 0
+    if(cipherSize > MAX_COMMAND_SIZE || bufferSize < 0
        || (UINT32)cipherSize > (UINT32)bufferSize)
     {
         printf("MAX_COMMAND_SIZE: %u\n", (unsigned)MAX_COMMAND_SIZE);
