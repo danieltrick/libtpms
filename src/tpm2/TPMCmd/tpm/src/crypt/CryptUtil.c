@@ -969,6 +969,7 @@ CryptParameterDecryption(
 {
     SESSION* session = SessionGet(handle);  // encrypt session
     pAssert_RC(session);
+    puts("CryptParameterDecryption()");
 
     // The HMAC key is going to be the concatenation of the session key and any
     // additional key material (like the authValue). The size of both of these
@@ -980,12 +981,14 @@ CryptParameterDecryption(
 
     if(bufferSize < leadingSizeInByte)
     {
+        puts("Error: TPM_RC_INSUFFICIENT()");
         return TPM_RC_INSUFFICIENT;
     }
 
     // Parameter encryption for a non-2B is not supported.
     if(leadingSizeInByte != 2)
     {
+        puts("Error: leadingSizeInByte != 2");
         FAIL_RC(FATAL_ERROR_INTERNAL);
         return TPM_RC_SIZE;
     }
@@ -993,12 +996,14 @@ CryptParameterDecryption(
     // Retrieve encrypted data size.
     if(UINT16_Unmarshal(&cipherSize, &buffer, &bufferSize) != TPM_RC_SUCCESS)
     {
+        puts("Error: UINT16_Unmarshal(&cipherSize) failed!");
         return TPM_RC_INSUFFICIENT;
     }
 
     if(cipherSize > MAX_COMMAND_SIZE || bufferSize <= 0
        || (UINT32)cipherSize > (UINT32)bufferSize)
     {
+        puts("Error: cipherSize > MAX_COMMAND_SIZE || bufferSize <= 0 || (UINT32)cipherSize > (UINT32)bufferSize)");
         return TPM_RC_SIZE;
     }
 
@@ -1012,6 +1017,7 @@ CryptParameterDecryption(
         // XOR parameter decryption formulation:
         //    XOR(parameter, hash, sessionAuth, nonceNewer, nonceOlder)
         // Call XOR obfuscation function
+        puts("CryptXORObfuscation()");
         result = CryptXORObfuscation(session->authHashAlg,
                                      &key.b,
                                      nonceCaller,
@@ -1022,6 +1028,7 @@ CryptParameterDecryption(
     else
     {
         // Assume that it is one of the symmetric block ciphers.
+        puts("ParmDecryptSym()");
         result = ParmDecryptSym(session->symmetric.algorithm,
                                 session->authHashAlg,
                                 session->symmetric.keyBits.sym,
@@ -1032,6 +1039,7 @@ CryptParameterDecryption(
                                 buffer);
     }
 
+    printf("result = %02X\n", (unsigned)result);
     return result;
 }
 
