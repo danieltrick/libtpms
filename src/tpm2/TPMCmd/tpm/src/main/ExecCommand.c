@@ -163,6 +163,7 @@ LIB_EXPORT void ExecuteCommand(
     command.index = CommandCodeToCommandIndex(command.code);
     if(UNIMPLEMENTED_COMMAND_INDEX == command.index)
     {
+        puts("Error: TPM_RC_COMMAND_CODE");
         result = TPM_RC_COMMAND_CODE;
         goto Cleanup;
     }
@@ -182,6 +183,7 @@ LIB_EXPORT void ExecuteCommand(
     // TPM_CC_FieldUpgradeData.
     if(IsFieldUgradeMode() && (command.code != TPM_CC_FieldUpgradeData))
     {
+        puts("Error: TPM_RC_UPGRADE");
         result = TPM_RC_UPGRADE;
         goto Cleanup;
     }
@@ -193,6 +195,7 @@ LIB_EXPORT void ExecuteCommand(
         if((!TPMIsStarted() && command.code != TPM_CC_Startup)
            || (TPMIsStarted() && command.code == TPM_CC_Startup))
         {
+            puts("Error: TPM_RC_INITIALIZE");
             result = TPM_RC_INITIALIZE;
             goto Cleanup;
         }
@@ -200,13 +203,17 @@ LIB_EXPORT void ExecuteCommand(
     NvIndexCacheInit();
     // Parse Handle buffer.
     result = ParseHandleBuffer(&command);
-    if(result != TPM_RC_SUCCESS)
+    if(result != TPM_RC_SUCCESS) {
+        puts("Error: ParseHandleBuffer() failed!");
         goto Cleanup;
+    }
     // All handles in the handle area are required to reference TPM-resident
     // entities.
     result = EntityGetLoadStatus(&command);
-    if(result != TPM_RC_SUCCESS)
+    if(result != TPM_RC_SUCCESS) {
+        puts("Error: EntityGetLoadStatus() failed!");
         goto Cleanup;
+    }
     // Authorization session handling for the command.
     ClearCpRpHashes(&command);
     if(command.tag == TPM_ST_SESSIONS)
@@ -215,8 +222,10 @@ LIB_EXPORT void ExecuteCommand(
         result = UINT32_Unmarshal((UINT32*)&command.authSize,
                                   &command.parameterBuffer,
                                   &command.parameterSize);
-        if(result != TPM_RC_SUCCESS)
+        if(result != TPM_RC_SUCCESS) {
+            puts("Error: UINT32_Unmarshal(&command.authSize) failed!");
             goto Cleanup;
+        }
         // Perform sanity check on the unmarshaled value. If it is smaller than
         // the smallest possible session or larger than the remaining size of
         // the command, then it is an error. NOTE: This check could pass but the
@@ -224,6 +233,7 @@ LIB_EXPORT void ExecuteCommand(
         // sessions are unmarshaled.
         if(command.authSize < 9 || command.authSize > command.parameterSize)
         {
+            puts("Error: Sanity check on the unmarshaled value failed!");
             result = TPM_RC_SIZE;
             goto Cleanup;
         }
@@ -234,8 +244,10 @@ LIB_EXPORT void ExecuteCommand(
         // successful return, command.parameterBuffer should be pointing at the
         // first byte of the parameters.
         result = ParseSessionBuffer(&command);
-        if(result != TPM_RC_SUCCESS)
+        if(result != TPM_RC_SUCCESS) {
+            puts("Error: ParseSessionBuffer() failed!");
             goto Cleanup;
+        }
     }
     else
     {
@@ -244,8 +256,10 @@ LIB_EXPORT void ExecuteCommand(
         // If the command requires authorizations, then CheckAuthNoSession() will
         // return an error.
         result = CheckAuthNoSession(&command);
-        if(result != TPM_RC_SUCCESS)
+        if(result != TPM_RC_SUCCESS) {
+            puts("Error: CheckAuthNoSession() failed!");
             goto Cleanup;
+        }
     }
     // Set up the response buffer pointers. CommandDispatch will marshal the
     // response parameters starting at the address in command.responseBuffer.
