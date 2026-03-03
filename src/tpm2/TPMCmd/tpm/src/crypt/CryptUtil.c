@@ -1003,6 +1003,9 @@ CryptParameterDecryption(
     if(cipherSize > MAX_COMMAND_SIZE || bufferSize <= 0
        || (UINT32)cipherSize > (UINT32)bufferSize)
     {
+        printf("MAX_COMMAND_SIZE: %u\n", (unsigned)MAX_COMMAND_SIZE);
+        printf("cipherSize: %u\n", (unsigned)cipherSize);
+        printf("bufferSize: %u\n", (unsigned)bufferSize);
         puts("Error: cipherSize > MAX_COMMAND_SIZE || bufferSize <= 0 || (UINT32)cipherSize > (UINT32)bufferSize)");
         return TPM_RC_SIZE;
     }
