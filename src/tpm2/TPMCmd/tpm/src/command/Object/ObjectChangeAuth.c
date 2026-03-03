@@ -27,6 +27,7 @@ TPM2_ObjectChangeAuth(ObjectChangeAuth_In*  in,  // IN: input parameter list
     TPM2B_NAME     QNCompare;
 
     // Input Validation
+    puts("TPM2_ObjectChangeAuth()")
 
     // Can not change authorization on sequence object
     if(ObjectIsSequence(object))
@@ -37,8 +38,10 @@ TPM2_ObjectChangeAuth(ObjectChangeAuth_In*  in,  // IN: input parameter list
     pAssert_RC(object != NULL);
 
     // Make sure that the authorization value is consistent with the nameAlg
-    if(!AdjustAuthSize(&in->newAuth, object->publicArea.nameAlg))
+    if(!AdjustAuthSize(&in->newAuth, object->publicArea.nameAlg)) {
+        puts("Error #1");
         return TPM_RCS_SIZE + RC_ObjectChangeAuth_newAuth;
+    }
 
     // Parent handle should be the parent of object handle.  In this
     // implementation we verify this by checking the QN of object.  Other
