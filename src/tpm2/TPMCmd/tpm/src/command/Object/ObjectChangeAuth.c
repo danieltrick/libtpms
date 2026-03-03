@@ -27,7 +27,7 @@ TPM2_ObjectChangeAuth(ObjectChangeAuth_In*  in,  // IN: input parameter list
     TPM2B_NAME     QNCompare;
 
     // Input Validation
-    puts("TPM2_ObjectChangeAuth()")
+    puts("TPM2_ObjectChangeAuth()");
 
     // Can not change authorization on sequence object
     if(ObjectIsSequence(object))
