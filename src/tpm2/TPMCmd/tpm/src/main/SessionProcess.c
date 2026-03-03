@@ -1629,15 +1629,20 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
     TPM_RC     errorIndex;
     SESSION*   session = NULL;
     //
+    puts("ParseSessionBuffer()");
     // Check if a command allows any session in its session area.
-    if(!IsSessionAllowed(command->index))
+    if(!IsSessionAllowed(command->index)) {
+        puts("Error: TPM_RC_AUTH_CONTEXT");
         return TPM_RC_AUTH_CONTEXT;
+    }
     // Default-initialization.
     command->sessionNum = 0;
 
     result              = RetrieveSessionData(command);
-    if(result != TPM_RC_SUCCESS)
+    if(result != TPM_RC_SUCCESS) {
+        puts("Error: RetrieveSessionData() failed");
         return result;
+    }
     // There is no command in the TPM spec that has more handles than
     // MAX_SESSION_NUM.
     pAssert_RC(command->handleNum <= MAX_SESSION_NUM);
@@ -1652,10 +1657,14 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
             // Note: for all the TPM 2.0 commands, handles requiring
             // authorization come first in a command input and there are only ever
             // two values requiring authorization
-            if(command->sessionNum == 0)		// libtpms added begin (Coverity 1550499)
+            if(command->sessionNum == 0) {		// libtpms added begin (Coverity 1550499)
+                puts("Error: TPM_RC_AUTH_MISSING");
                 return TPM_RC_AUTH_MISSING;		// libtpms added end
-            if(i > (command->sessionNum - 1))
+            }
+            if(i > (command->sessionNum - 1)) {
+                puts("Error: TPM_RC_AUTH_MISSING");
                 return TPM_RC_AUTH_MISSING;
+            }
             // Record the handle associated with the authorization session
             s_associatedHandles[i] = HierarchyNormalizeHandle(command->handles[i]);
         }
@@ -1673,8 +1682,10 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
             // a password session can't be audit, encrypt or decrypt
             if(IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, audit)
                || IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, encrypt)
-               || IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, decrypt))
+               || IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, decrypt)) {
+                puts("Error: TPM_RCS_ATTRIBUTES");
                 return TPM_RCS_ATTRIBUTES + errorIndex;
+            }
             session = NULL;
         }
         else
@@ -1684,8 +1695,10 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
 
             // A trial session can not appear in session area, because it cannot
             // be used for authorization, audit or encrypt/decrypt.
-            if(session->attributes.isTrialPolicy == SET)
+            if(session->attributes.isTrialPolicy == SET) {
+                puts("Error: TPM_RCS_ATTRIBUTES");
                 return TPM_RCS_ATTRIBUTES + errorIndex;
+            }
 
             // See if the session is bound to a DA protected entity
             // NOTE: Since a policy session is never bound, a policy is still
@@ -1694,8 +1707,10 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
             if(session->attributes.isDaBound == SET)
             {
                 result = CheckLockedOut(session->attributes.isLockoutBound == SET);
-                if(result != TPM_RC_SUCCESS)
+                if(result != TPM_RC_SUCCESS) {
+                    puts("Error: CheckLockedOut() failed!");
                     return result;
+                }
             }
             // If this session is for auditing, make sure the cpHash is computed.
             if(IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, audit))
@@ -1706,8 +1721,10 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
         if(s_associatedHandles[sessionIndex] != TPM_RH_UNASSIGNED)
         {
             result = CheckAuthSession(command, sessionIndex);
-            if(result != TPM_RC_SUCCESS)
+            if(result != TPM_RC_SUCCESS) {
+                puts("Error: CheckAuthSession() failed!");
                 return RcSafeAddToResult(result, errorIndex);
+            }
         }
         else
         {
@@ -1715,8 +1732,10 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
             // decrypt, or audit
             if(!IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, audit)
                && !IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, encrypt)
-               && !IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, decrypt))
+               && !IS_ATTRIBUTE(s_attributes[sessionIndex], TPMA_SESSION, decrypt)) {
+                puts("Error: TPM_RCS_ATTRIBUTES");
                 return TPM_RCS_ATTRIBUTES + errorIndex;
+            }
 
             // no authValue included in any of the HMAC computations
             pAssert_RC(session != NULL);
@@ -1724,8 +1743,10 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
 
             // check HMAC for encrypt/decrypt/audit only sessions
             result = CheckSessionHMAC(command, sessionIndex);
-            if(result != TPM_RC_SUCCESS)
+            if(result != TPM_RC_SUCCESS) {
+                puts("Error: CheckSessionHMAC() has failed!");
                 return RcSafeAddToResult(result, errorIndex);
+            }
         }
     }
 #if CC_GetCommandAuditDigest
@@ -1734,8 +1755,10 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
     if(CommandAuditIsRequired(command->index))
     {
         result = CheckCommandAudit(command);
-        if(result != TPM_RC_SUCCESS)
+        if(result != TPM_RC_SUCCESS) {
+            puts("Error: CheckCommandAudit() has failed!");
             return result;  // No session number to reference
+        }
     }
 #endif
     // Decrypt the first parameter if applicable. This should be the last operation
@@ -1764,9 +1787,11 @@ ParseSessionBuffer(COMMAND* command  // IN: the structure that contains
                                           (UINT16)size,
                                           &extraKey,
                                           command->parameterBuffer);
-        if(result != TPM_RC_SUCCESS)
+        if(result != TPM_RC_SUCCESS) {
+            puts("Error: CryptParameterDecryption() has failed!");
             return RcSafeAddToResult(result,
                                      TPM_RC_S + g_rcIndex[s_decryptSessionIndex]);
+        }
     }
 
     return TPM_RC_SUCCESS;
