@@ -199,6 +199,7 @@ CommandDispatcher(COMMAND* command)
     TPM_RC                result;
     //
     // Get the address of the descriptor for this command
+    printf("CommandDispatcher(command->code=%04X)\n", (unsigned)command->code);
     pAssert_RC(
         command->index < sizeof(s_CommandDataArray) / sizeof(COMMAND_DESCRIPTOR_t*));
     desc = s_CommandDataArray[command->index];
